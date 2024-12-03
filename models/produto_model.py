@@ -9,3 +9,4 @@ class Produto():
     preco: Optional[float] = None
     descricao: Optional[str] = None
     estoque: Optional[int] = None
+    categoria_id: Optional[int] = None

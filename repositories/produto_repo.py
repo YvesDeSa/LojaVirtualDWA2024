@@ -22,7 +22,7 @@ class ProdutoRepo:
                 cursor = conexao.cursor()
                 cursor.execute(
                     SQL_INSERIR,
-                    (produto.nome, produto.preco, produto.descricao, produto.estoque),
+                    (produto.nome, produto.preco, produto.descricao, produto.estoque, produto.categoria_id),
                 )
                 if cursor.rowcount > 0:
                     produto.id = cursor.lastrowid
@@ -55,6 +55,7 @@ class ProdutoRepo:
                         produto.preco,
                         produto.descricao,
                         produto.estoque,
+                        produto.categoria_id,
                         produto.id,
                     ),
                 )
@@ -133,6 +134,47 @@ class ProdutoRepo:
                 cursor = conexao.cursor()
                 tupla = cursor.execute(
                     SQL_OBTER_QUANTIDADE_BUSCA, (termo, termo)
+                ).fetchone()
+                return int(tupla[0])
+        except sqlite3.Error as ex:
+            print(ex)
+            return None
+
+    @classmethod
+    def obter_busca_por_categoria(
+        cls, termo: str, pagina: int, tamanho_pagina: int, ordem: int, categoria: int
+    ) -> List[Produto]:
+        termo = "%" + termo + "%"
+        offset = (pagina - 1) * tamanho_pagina
+        match (ordem):
+            case 1:
+                SQL_OBTER_BUSCA_CATEGORIA_ORDENADA = SQL_OBTER_BUSCA_POR_CATEGORIA.replace("#1", "nome")
+            case 2:
+                SQL_OBTER_BUSCA_CATEGORIA_ORDENADA = SQL_OBTER_BUSCA_POR_CATEGORIA.replace("#1", "preco ASC")
+            case 3:
+                SQL_OBTER_BUSCA_CATEGORIA_ORDENADA = SQL_OBTER_BUSCA_POR_CATEGORIA.replace("#1", "preco DESC")
+            case _:
+                SQL_OBTER_BUSCA_CATEGORIA_ORDENADA = SQL_OBTER_BUSCA_POR_CATEGORIA.replace("#1", "nome")
+        try:
+            with obter_conexao() as conexao:
+                cursor = conexao.cursor()
+                tuplas = cursor.execute(
+                    SQL_OBTER_BUSCA_CATEGORIA_ORDENADA, (categoria, termo, termo, tamanho_pagina, offset)
+                ).fetchall()
+                produtos = [Produto(*t) for t in tuplas]
+                return produtos
+        except sqlite3.Error as ex:
+            print(ex)
+            return None
+        
+    @classmethod
+    def obter_quantidade_busca_categoria(cls, termo: str, categoria: int) -> Optional[int]:
+        termo = "%" + termo + "%"
+        try:
+            with obter_conexao() as conexao:
+                cursor = conexao.cursor()
+                tupla = cursor.execute(
+                    SQL_OBTER_QUANTIDADE_BUSCA_CATEGORIA, (categoria, termo, termo)
                 ).fetchone()
                 return int(tupla[0])
         except sqlite3.Error as ex:

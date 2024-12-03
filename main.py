@@ -5,16 +5,20 @@ from repositories.usuario_repo import UsuarioRepo
 from repositories.item_pedido_repo import ItemPedidoRepo
 from repositories.pedido_repo import PedidoRepo
 from repositories.produto_repo import ProdutoRepo
+from repositories.categoria_repo import CategoriaRepo
 from routes import auth_routes, main_routes, cliente_routes, admin_routes, user_routes
 from util.auth_jwt import checar_autorizacao, checar_autenticacao, configurar_swagger_auth
 from util.exceptions import configurar_excecoes
 
+CategoriaRepo.criar_tabela()
+CategoriaRepo.inserir_categorias_json("sql/categorias.json")
 ProdutoRepo.criar_tabela()
 ProdutoRepo.inserir_produtos_json("sql/produtos.json")
 UsuarioRepo.criar_tabela()
 UsuarioRepo.inserir_usuarios_json("sql/usuarios.json")
 PedidoRepo.criar_tabela()
 ItemPedidoRepo.criar_tabela()
+
 app = FastAPI(dependencies=[Depends(checar_autorizacao)])
 app.add_middleware(
     CORSMiddleware,
