@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, HTTPException, Path
 from fastapi.responses import JSONResponse
 
 from dtos.alterar_pedido_dto import AlterarPedidoDto
@@ -7,6 +7,7 @@ from dtos.alterar_produto_dto import AlterarProdutoDto
 from dtos.id_produto_dto import IdProdutoDto
 from dtos.inserir_produto_dto import InserirProdutoDto
 from dtos.problem_details_dto import ProblemDetailsDto
+from models.categoria_model import Categoria
 from models.pedido_model import EstadoPedido
 from models.produto_model import Produto
 from repositories.item_pedido_repo import ItemPedidoRepo
@@ -119,7 +120,6 @@ async def obter_categorias():
     categorias = CategoriaRepo.obter_todos()
     return categorias
 
-
 @router.get("/obter_categorias/{id_categoria}")
 async def obter_categoria(id_categoria: int = Path(..., title="Id da Categoria", ge=1)):
     await asyncio.sleep(SLEEP_TIME)
@@ -133,3 +133,40 @@ async def obter_categoria(id_categoria: int = Path(..., title="Id da Categoria",
         ["body", "id_categoria"],
     )
     return JSONResponse(pd.to_dict(), status_code=404)
+
+
+
+@router.post("/adicionar_categoria", response_model=Categoria, status_code=201)
+async def adicionar_categoria(categoria: Categoria):
+    """
+    Adiciona uma nova categoria.
+    """
+    await asyncio.sleep(SLEEP_TIME)
+    nova_categoria = CategoriaRepo.inserir(categoria)
+    if not nova_categoria:
+        raise HTTPException(status_code=500, detail="Erro ao adicionar categoria")
+    return nova_categoria
+
+
+@router.post("/editar_categoria", response_model=Categoria)
+async def editar_categoria(categoria: Categoria):
+    """
+    Edita uma categoria existente.
+    """
+    await asyncio.sleep(SLEEP_TIME)
+    sucesso = CategoriaRepo.alterar(categoria)
+    if not sucesso:
+        raise HTTPException(status_code=404, detail="Categoria não encontrada")
+    return categoria
+
+
+
+@router.post("/excluir_categoria/{id_categoria}", status_code=204)
+async def excluir_categoria(
+    id_categoria: int = Path(..., title="ID da Categoria", ge=1)
+):
+    await asyncio.sleep(SLEEP_TIME)
+    sucesso = CategoriaRepo.excluir(id_categoria)
+    if not sucesso:
+        raise HTTPException(status_code=404, detail="Categoria não encontrada")
+    return

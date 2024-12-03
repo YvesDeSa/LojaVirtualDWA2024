@@ -22,7 +22,7 @@ class CategoriaRepo:
                 cursor = conexao.cursor()
                 cursor.execute(
                     SQL_INSERIR,
-                    (categoria.nome,),  # Corrigido: Tupla com um único elemento
+                    (categoria.nome,),  
                 )
                 if cursor.rowcount > 0:
                     categoria.id = cursor.lastrowid
@@ -130,12 +130,10 @@ class CategoriaRepo:
     @classmethod
     def inserir_categorias_json(cls, arquivo_json: str):
         try:
-            # Verifica se já existem categorias no banco
             if cls.obter_quantidade() == 0:
                 with open(arquivo_json, "r", encoding="utf-8") as arquivo:
-                    categorias = json.load(arquivo)  # Carrega o JSON
+                    categorias = json.load(arquivo) 
                     for categoria in categorias:
-                        # Constrói o objeto Categoria e insere no banco
                         cls.inserir(Categoria(nome=categoria["nome"]))
                 print("Categorias inseridas com sucesso.")
             else:
@@ -146,3 +144,4 @@ class CategoriaRepo:
             print(f"Erro ao decodificar o arquivo JSON: {arquivo_json}.")
         except Exception as ex:
             print(f"Ocorreu um erro ao inserir categorias: {ex}")
+
