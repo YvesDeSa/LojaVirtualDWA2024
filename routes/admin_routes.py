@@ -13,9 +13,12 @@ from repositories.item_pedido_repo import ItemPedidoRepo
 from repositories.pedido_repo import PedidoRepo
 from repositories.produto_repo import ProdutoRepo
 from repositories.usuario_repo import UsuarioRepo
+from repositories.categoria_repo import CategoriaRepo
+
 
 
 router = APIRouter(prefix="/admin")
+SLEEP_TIME = 0.2
 
 
 @router.get("/obter_produtos")
@@ -100,3 +103,33 @@ async def obter_pedidos_por_estado(estado: EstadoPedido = Path(..., title="Estad
     await asyncio.sleep(1)
     pedidos = PedidoRepo.obter_todos_por_estado(estado.value)
     return pedidos
+
+
+@router.get("/obter_produtos_por_categoria/{id_categoria}")
+async def obter_produtos_por_categoria(
+    id_categoria: int = Path(..., title="Id da Categoria", ge=1)
+):
+    await asyncio.sleep(SLEEP_TIME)
+    produtos = ProdutoRepo.obter_por_categoria(id_categoria)
+    return produtos
+
+@router.get("/obter_categorias")
+async def obter_categorias():
+    await asyncio.sleep(SLEEP_TIME)
+    categorias = CategoriaRepo.obter_todos()
+    return categorias
+
+
+@router.get("/obter_categorias/{id_categoria}")
+async def obter_categoria(id_categoria: int = Path(..., title="Id da Categoria", ge=1)):
+    await asyncio.sleep(SLEEP_TIME)
+    categoria = CategoriaRepo.obter_um(id_categoria)
+    if categoria:
+        return categoria
+    pd = ProblemDetailsDto(
+        "int",
+        f"A categoria com id <b>{id_categoria}</b> não foi encontrada.",
+        "value_not_found",
+        ["body", "id_categoria"],
+    )
+    return JSONResponse(pd.to_dict(), status_code=404)

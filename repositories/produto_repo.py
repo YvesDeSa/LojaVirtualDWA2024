@@ -191,6 +191,26 @@ class ProdutoRepo:
             cls.transferir_imagens("static/img/produtos/inserir", "static/img/produtos")
 
     @classmethod
+    def obter_por_categoria(cls, categoria_id: int):
+        try:
+            with obter_conexao() as conexao:
+               cursor = conexao.cursor()
+               tuplas = cursor.execute(
+                 """
+                SELECT id, nome, preco, descricao, estoque, categoria_id
+                FROM produto
+                WHERE categoria_id = ?
+                """,
+                (categoria_id,),
+            ).fetchall()
+            produtos = [Produto(*t) for t in tuplas]
+            return produtos
+        except sqlite3.Error as ex:
+           print(f"Erro ao obter produtos por categoria: {ex}")
+        return None
+
+
+    @classmethod
     def transferir_imagens(cls, pasta_origem, pasta_destino):
         path_origem = Path(pasta_origem)
         path_destino = Path(pasta_destino)
